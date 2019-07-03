@@ -36,7 +36,8 @@ def start(bot, update):
     bot.send_message(chat_id=update.message.chat_id, text="Hi " + update.effective_user['first_name'] +
                      "With this bot you can play the game 'murder'. If you want to participate, type /ready. The game"
                      " will commence when an admin start it. Once this happens, further instructions will follow.")
-    chatDir[update.effective_user['username']] = update.message.chat_id
+    chatDir[update.effective_user['username']] = update.message.chat_id # Used to communicate with player proactively
+    logger.info('started communication with "%s"', update.effective_user['username'])
     if checkAdminPrivileges(update):
         bot.send_message(chat_id=update.message.chat_id, text="You are an admin.")
 
@@ -52,6 +53,7 @@ def signUpForGame(bot, update):
         bot.send_message(chat_id=update.message.chat_id, text="You are already signed up!")
         return
     signedUpPlayers.append(update.effective_user['username'])
+    logger.info('murder game: "%s" now ready', update.effective_user['username'])
     bot.send_message(chat_id=update.message.chat_id, text="You are now signed up.")
 
 def unReadyForGame(bot, update):
@@ -67,6 +69,7 @@ def unReadyForGame(bot, update):
                                                               "participation. ")
         return
     signedUpPlayers.remove(update.effective_user['username'])
+    logger.info('murder game: "%s" now unready',update.effective_user['username'])
     bot.send_message(chat_id=update.message.chat_id, text="You are now signed up.")
 
 
@@ -80,6 +83,7 @@ def killTarget(bot, update):
 
     #Confirm to target
     target = murder.getTarget(update.effective_user['username'])
+    logger.info('murder game: "%s" tries to kill "%s" ', update.effective_user['username'], target)
     bot.send_message(chat_id = chatDir[target],text= " It has been claimed that you are dead. Are these rumors true? Then please type /dead .")
     return
 
@@ -92,6 +96,7 @@ def getTarget(bot, update):
         return
     target = murder.getTarget(update.effective_user['username'])
     bot.send_message(chat_id=update.message.chat_id, text="Your target is " + target)
+    logger.info('murder game: "%s" requested target, got "%s"',update.effective_user['username'], target)
 
 def confirmDeath(bot,update):
     #Called by typing /dead. 2 uses: confirm kill by other player / suicide.
@@ -104,6 +109,7 @@ def confirmDeath(bot,update):
         return
     bot.send_message(chat_id=update.message.chat_id, text="You are now dead")
     murder.eliminatePlayer(user)
+    logger.info('murder game: death of "%s"', user)
 
 
 # Admin commands
@@ -123,6 +129,7 @@ def startGame(bot,update):
                                                                        " show your current target, type target")
             bot.send_message(chat_id=chatDir[player],
                              text='Your first target will be ' + murder.getTarget(player))
+        logger.info('game started')
         return
     bot.send_message(chat_id=update.message.chat_id, text='You need to be admin to do that!')
 
@@ -130,6 +137,7 @@ def endGame(bot,update):
     if checkAdminPrivileges(update):
         print(murder.remainingPlayers)
         murder.reset()
+        logger.info('game ended by admin "%s", with remaining players "%s"', update.effective_user['username'], str(murder.remainingPlayers))
         return
     bot.send_message(chat_id=update.message.chat_id, text='You need to be admin to do that!')
 
@@ -140,7 +148,6 @@ def error(update, context):
     """Log Errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, context.error)
 
-#TODO add logging to everything
 #TODO Check which user is performing an action -> if the user is in the admin group he can do other things than players
 #TODO find a way to authenticate/identify players -> First name/ telegram handle ?
 #TODO Implement for players: kill (kills the target) -> possibly with a request to the killed player to accept his death
