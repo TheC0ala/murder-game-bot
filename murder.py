@@ -2,6 +2,7 @@ import random
 
 remainingPlayers = {}
 killedPlayers = {}
+playersWantingToBeReassigned=[]
 
 activeGame = False
 
@@ -27,17 +28,26 @@ def shuffleList(playerlist):
     #Shuffle the list until no player has the own name as target
     while True:
         random.shuffle(targetlist)
-        for p1, p2 in zip(targetlist,playerlist):
-            if p1 == p2:
-                break
-            else:
-                return targetlist
+        if(checkDoubles(targetlist,playerlist)):
+            return targetlist
+
+def checkDoubles(list1,list2):
+    for p1, p2 in zip(list1, list2):
+        if p1 == p2:
+            return False
+        else:
+            continue
+    return True
+
+def getPotentialKiller(victim):
+    for p in remainingPlayers.keys():
+        if remainingPlayers[p] == victim:
+            return p
+    return None
 
 def eliminatePlayer(victim):
     #get (potential) killer
-    for p in remainingPlayers.keys():
-        if remainingPlayers[p]==victim:
-            killer = p
+    killer = getPotentialKiller(victim)
     if killer is None:
         return
     killPlayer(killer, victim)
@@ -73,3 +83,11 @@ def declareWinner(winner):
     print(winner + " has won the game!")
     global activeGame
     activeGame = False
+
+def addToReassignment(player):
+    if player in remainingPlayers:
+        playersWantingToBeReassigned.append(player)
+
+def reassign():
+    if len(playersWantingToBeReassigned)>1:
+        pass #Not implemented

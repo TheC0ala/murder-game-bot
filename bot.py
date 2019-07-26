@@ -131,7 +131,11 @@ def confirmDeath(bot,update):
         bot.send_message(chat_id=update.message.chat_id, text="You are already dead!")
         return
     bot.send_message(chat_id=update.message.chat_id, text="You are now dead")
+    killer = murder.getPotentialKiller(user)
     murder.eliminatePlayer(user)
+    if len(murder.remainingPlayers)>1:
+        bot.send_message(chat_id=chatDir[killer], text="Your victim is dead. Your next /target will be " + murder.getTarget(killer))
+
     logger.info('murder game: death of "%s"', user)
 
 
@@ -139,8 +143,7 @@ def confirmDeath(bot,update):
 
 def getRemainingPlayers(bot, update):
     if checkAdminPrivileges(update):
-        players = list(murder.remainingPlayers.keys())
-        bot.send_message(chat_id=update.message.chat_id, text=players)
+        bot.send_message(chat_id=update.message.chat_id, text=murder.remainingPlayers)
         return
     bot.send_message(chat_id=update.message.chat_id, text='You need to be admin to do that!')
 
@@ -157,10 +160,23 @@ def startGame(bot,update):
         for player in signedUpPlayers:
             bot.send_message(chat_id=chatDir[player],
                              text='The game starts now!' + GAME_RULE + " When you killed your target, type /kill. To"
-                                                                       " show your current target, type target")
+                                                                       " show your current target, type /target")
             bot.send_message(chat_id=chatDir[player],
                              text='Your first target will be ' + murder.getTarget(player))
         logger.info('game started')
+        return
+    bot.send_message(chat_id=update.message.chat_id, text='You need to be admin to do that!')
+
+def printChatDir(bot,update):
+    if checkAdminPrivileges(update):
+        print(chatDir)
+        return
+    bot.send_message(chat_id=update.message.chat_id, text='You need to be admin to do that!')
+
+def getGameStats(bot,update):
+    if checkAdminPrivileges(update):
+        bot.send_message(chat_id=update.message.chat_id, text='Remaining Players: ' + len(murder.remainingPlayers) +
+                                                              ', Killed Players: ' + len(murder.killedPlayers))
         return
     bot.send_message(chat_id=update.message.chat_id, text='You need to be admin to do that!')
 
@@ -247,14 +263,16 @@ def main():
     dp.add_handler(CommandHandler('ready', signUpForGame))
     dp.add_handler(CommandHandler('unready', unReadyForGame))
     dp.add_handler(CommandHandler('dead', confirmDeath))
+    dp.add_handler(CommandHandler('suicide', confirmDeath))
     dp.add_handler(CommandHandler('kill', killTarget))
     dp.add_handler(CommandHandler('target', getTarget))
     dp.add_handler(CommandHandler('startGame', startGame))
     dp.add_handler(CommandHandler('endGame', endGame))
+    dp.add_handler(CommandHandler('stats', getGameStats))
     dp.add_handler(CommandHandler('resetGame', resetGame))
     dp.add_handler(CommandHandler('gameState', getGameState))
     dp.add_handler(CommandHandler('debugKill', debugKillFirst))
-
+    dp.add_handler(CommandHandler('printChatDir', printChatDir))
 
     j = updater.job_queue
     endOfGameJob = j.run_repeating(gameFinishedCallback, interval=60, first=0)
@@ -266,4 +284,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
