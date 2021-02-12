@@ -9,7 +9,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 # configuration values
-token = ""
+token = "1692005400:AAHRsKLM7jF7X3jFPeZZ3ZbjnUwP7_5olS4"
 admins = []
 signedUpPlayers = []
 
