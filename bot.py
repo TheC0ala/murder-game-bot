@@ -24,25 +24,6 @@ GAME_RULE = "To kill your target, you have to give them an item, and they have t
 
 chatDir = {}
 
-def readConfig():
-    config = configparser.ConfigParser()
-    config.read('config.ini')
-    global token, admins, signedUpPlayers
-    try:
-        token = config['DEFAULT']['token']
-    except KeyError:
-        logger.error('No token specified, can not start bot')
-        sys.exit()
-    try:
-        admins = config['DEFAULT']['admins'].split(",")
-    except KeyError:
-        logger.warning('No admins specified')
-    try:
-        signedUpPlayers = config['DEFAULT']['players'].split(",")
-        # This won't work either way, because we need the player IDs to identify them.
-    except KeyError:
-        logger.warning('No players in config supplied')
-
 def checkAdminPrivileges(update):
     # Currently via usernames, could also be implemented via id.
     logger.info('Checking if "%s" is admin', update.effective_user['username'])
@@ -251,7 +232,8 @@ def error(update, context):
 
 def main():
     readConfig()
-    updater = Updater(token)
+    updater = Updater(token="1692005400:AAHRsKLM7jF7X3jFPeZZ3ZbjnUwP7_5olS4")
+
     dp = updater.dispatcher
     murder.reset()
 
