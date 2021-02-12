@@ -231,7 +231,6 @@ def error(update, context):
 
 
 def main():
-    readConfig()
     updater = Updater(token="1692005400:AAHRsKLM7jF7X3jFPeZZ3ZbjnUwP7_5olS4")
 
     dp = updater.dispatcher
